@@ -33,8 +33,8 @@ import org.altbeacon.beacon.logging.LogManager;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
-
 import java.util.List;
 
 /**
@@ -63,6 +63,9 @@ public class Beacon implements Parcelable, Serializable {
             Collections.unmodifiableList(new ArrayList<Long>());
     private static final List<Identifier> UNMODIFIABLE_LIST_OF_IDENTIFIER =
             Collections.unmodifiableList(new ArrayList<Identifier>());
+    private static final int DATA_TYPE_TX_POWER_LEVEL = 0x0a;
+    private static final int DATA_TYPE_SERVICE_DATA = 0x16;
+    private static final byte[] BATTERY_SERVICE = {0x0f, 0x18};
 
     /**
      * Determines whether a the bluetoothAddress (mac address) must be the same for two Beacons
@@ -177,6 +180,21 @@ public class Beacon implements Parcelable, Serializable {
     protected boolean mMultiFrameBeacon = false;
 
     /**
+     * Scanned Record for O2Con
+     */
+    protected byte[] mScanRecord;
+
+    /**
+     * Battery Level for O2Con
+     */
+    protected int mBatteryLevel;
+
+    /**
+     * Tx Power for O2Con, Not measured Tx Power
+     */
+    protected int mRealTxPower;
+
+    /**
      * Required for making object Parcelable.  If you override this class, you must provide an
      * equivalent version of this method.
      */
@@ -257,6 +275,8 @@ public class Beacon implements Parcelable, Serializable {
         mRunningAverageRssi = (Double) in.readValue(null);
         mRssiMeasurementCount = in.readInt();
         mPacketCount = in.readInt();
+        mBatteryLevel = in.readInt();
+        mRealTxPower = in.readInt();
     }
 
     /**
@@ -281,6 +301,8 @@ public class Beacon implements Parcelable, Serializable {
         this.mParserIdentifier = otherBeacon.mParserIdentifier;
         this.mMultiFrameBeacon = otherBeacon.mMultiFrameBeacon;
         this.mManufacturer = otherBeacon.mManufacturer;
+        this.mBatteryLevel = otherBeacon.mBatteryLevel;
+        this.mRealTxPower = otherBeacon.mRealTxPower;
     }
 
     /**
@@ -531,6 +553,59 @@ public class Beacon implements Parcelable, Serializable {
     public boolean isMultiFrameBeacon() { return mMultiFrameBeacon; }
 
     /**
+     * @return mBatteryLevel
+     * @see #mBatteryLevel
+     */
+    public int getBatteryLevel() {
+        return mBatteryLevel;
+    }
+
+    /**
+     * @return mRealTxPower
+     * @see #mRealTxPower
+     */
+    public int getRealTxPower() {
+        return mRealTxPower;
+    }
+
+    public void updateExtraData() {
+        int index = 0;
+        do {
+            int len = mScanRecord[index++];
+            if (len == 0) {
+                break;
+            }
+            int type = mScanRecord[index] & 0xFF;
+            switch (type) {
+                case DATA_TYPE_TX_POWER_LEVEL:
+                    if (len < 2) {
+                        LogManager.e(TAG, "Bad tx power level data. Length should be more than 1");
+                        break;
+                    }
+
+                    mRealTxPower = ((mScanRecord[index + 1] & 0xFF));
+                    break;
+                case DATA_TYPE_SERVICE_DATA:
+                    if (len < 4) {
+                        LogManager.e(TAG, "Bad service data. Length should be more than 3");
+                        break;
+                    }
+
+                    byte[] service1 = new byte[len - 2];
+                    System.arraycopy(mScanRecord, index + 1, service1, 0, len - 2);
+                    if (Arrays.equals(service1, BATTERY_SERVICE)) {
+                        mBatteryLevel = (mScanRecord[index + len - 1] & 0xFF);
+                    }
+                    break;
+                default:
+                    //TODO, add support for other datatypes
+                    break;
+            }
+            index += len;
+        } while (index < mScanRecord.length);
+    }
+
+    /**
      * Calculate a hashCode for this beacon
      * @return
      */
@@ -636,6 +711,8 @@ public class Beacon implements Parcelable, Serializable {
         out.writeValue(mRunningAverageRssi);
         out.writeInt(mRssiMeasurementCount);
         out.writeInt(mPacketCount);
+        out.writeInt(mBatteryLevel);
+        out.writeInt(mRealTxPower);
     }
 
     /**

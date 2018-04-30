@@ -74,6 +74,7 @@ public class RangeState implements Serializable {
                 if (rangedBeacon.isTracked()) {
                     rangedBeacon.commitMeasurements(); // calculates accuracy
                     if (!rangedBeacon.noMeasurementsAvailable()) {
+                        rangedBeacon.getBeacon().updateExtraData();
                         finalizedBeacons.add(rangedBeacon.getBeacon());
                     }
                 }
