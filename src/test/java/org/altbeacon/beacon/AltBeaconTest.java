@@ -46,7 +46,7 @@ public class AltBeaconTest {
         byte[] data = new byte[len / 2];
         for (int i = 0; i < len; i += 2) {
             data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
-                    + Character.digit(s.charAt(i+1), 16));
+                    + Character.digit(s.charAt(i + 1), 16));
         }
         return data;
     }
@@ -56,28 +56,29 @@ public class AltBeaconTest {
         byte[] bytes = hexStringToByteArray("02011a1bff1801beac2f234454cf6d4a0fadf2f4911ba9ffa600010002c509");
         AltBeaconParser parser = new AltBeaconParser();
         Beacon beacon = parser.fromScanData(bytes, -55, null);
-        assertEquals("manData should be parsed", 9, ((AltBeacon) beacon).getMfgReserved() );
+        assertEquals("manData should be parsed", 9, ((AltBeacon) beacon).getMfgReserved());
     }
 
     @Test
     public void testCanSerializeParcelable() {
         org.robolectric.shadows.ShadowLog.stream = System.err;
         final Beacon original = new AltBeacon.Builder().setMfgReserved(2)
-                                                       .setBluetoothAddress("aa:bb:cc:dd:ee:ff")
-                                                       .setBluetoothName("Any Bluetooth")
-                                                       .setBeaconTypeCode(1)
-                                                       .setExtraDataFields(Arrays.asList(4L, 5L))
-                                                       .setId1("6")
-                                                       .setId2("7")
-                                                       .setId3("8")
-                                                       .setManufacturer(10)
-                                                       .setMultiFrameBeacon(true)
-                                                       .setParserIdentifier("Any Parser ID")
-                                                       .setRssi(-11)
-                                                       .setRunningAverageRssi(-12.3)
-                                                       .setServiceUuid(13)
-                                                       .setTxPower(14)
-                                                       .build();
+                .setBluetoothAddress("aa:bb:cc:dd:ee:ff")
+                .setBluetoothName("Any Bluetooth")
+                .setBeaconTypeCode(1)
+                .setExtraDataFields(Arrays.asList(4L, 5L))
+                .setId1("6")
+                .setId2("7")
+                .setId3("8")
+                .setManufacturer(10)
+                .setMultiFrameBeacon(true)
+                .setParserIdentifier("Any Parser ID")
+                .setRssi(-11)
+                .setRunningAverageRssi(-12.3)
+                .setServiceUuid(13)
+                .setTxPower(14)
+                .setBatteryLevel(0).setRealTxPower(0)
+                .build();
         original.setPacketCount(15);
         original.setRssiMeasurementCount(16);
 
@@ -114,21 +115,21 @@ public class AltBeaconTest {
     @Test
     public void copyingBeaconTransfersAllFields() {
         final Beacon original = new AltBeacon.Builder().setMfgReserved(2)
-                                                       .setBluetoothAddress("aa:bb:cc:dd:ee:ff")
-                                                       .setBluetoothName("Any Bluetooth")
-                                                       .setBeaconTypeCode(1)
-                                                       .setExtraDataFields(Arrays.asList(4L, 5L))
-                                                       .setId1("6")
-                                                       .setId2("7")
-                                                       .setId3("8")
-                                                       .setManufacturer(10)
-                                                       .setMultiFrameBeacon(true)
-                                                       .setParserIdentifier("Any Parser ID")
-                                                       .setRssi(-11)
-                                                       .setRunningAverageRssi(-12.3)
-                                                       .setServiceUuid(13)
-                                                       .setTxPower(14)
-                                                       .build();
+                .setBluetoothAddress("aa:bb:cc:dd:ee:ff")
+                .setBluetoothName("Any Bluetooth")
+                .setBeaconTypeCode(1)
+                .setExtraDataFields(Arrays.asList(4L, 5L))
+                .setId1("6")
+                .setId2("7")
+                .setId3("8")
+                .setManufacturer(10)
+                .setMultiFrameBeacon(true)
+                .setParserIdentifier("Any Parser ID")
+                .setRssi(-11)
+                .setRunningAverageRssi(-12.3)
+                .setServiceUuid(13)
+                .setTxPower(14)
+                .build();
         original.setPacketCount(15);
         original.setRssiMeasurementCount(16);
         final AltBeacon copied = new AltBeacon(original);

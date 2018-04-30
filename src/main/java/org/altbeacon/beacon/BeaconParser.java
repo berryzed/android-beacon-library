@@ -610,6 +610,7 @@ public class BeaconParser implements Serializable {
             beacon.mManufacturer = manufacturer;
             beacon.mParserIdentifier = mIdentifier;
             beacon.mMultiFrameBeacon = extraParsers.size() > 0 || mExtraFrame;
+            beacon.mScanRecord = bytesToProcess;
         }
         return beacon;
     }

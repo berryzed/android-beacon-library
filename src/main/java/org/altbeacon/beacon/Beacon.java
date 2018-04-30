@@ -275,6 +275,8 @@ public class Beacon implements Parcelable, Serializable {
         mRunningAverageRssi = (Double) in.readValue(null);
         mRssiMeasurementCount = in.readInt();
         mPacketCount = in.readInt();
+//        mScanRecord = new byte[in.readInt()];
+//        in.readByteArray(mScanRecord);
         mBatteryLevel = in.readInt();
         mRealTxPower = in.readInt();
     }
@@ -301,6 +303,7 @@ public class Beacon implements Parcelable, Serializable {
         this.mParserIdentifier = otherBeacon.mParserIdentifier;
         this.mMultiFrameBeacon = otherBeacon.mMultiFrameBeacon;
         this.mManufacturer = otherBeacon.mManufacturer;
+        this.mScanRecord = otherBeacon.mScanRecord;
         this.mBatteryLevel = otherBeacon.mBatteryLevel;
         this.mRealTxPower = otherBeacon.mRealTxPower;
     }
@@ -711,6 +714,9 @@ public class Beacon implements Parcelable, Serializable {
         out.writeValue(mRunningAverageRssi);
         out.writeInt(mRssiMeasurementCount);
         out.writeInt(mPacketCount);
+//        int length = mScanRecord.length;
+//        out.writeInt(length);
+//        out.writeByteArray(mScanRecord);
         out.writeInt(mBatteryLevel);
         out.writeInt(mRealTxPower);
     }
@@ -801,6 +807,8 @@ public class Beacon implements Parcelable, Serializable {
             setRssi(beacon.getRssi());
             setServiceUuid(beacon.getServiceUuid());
             setMultiFrameBeacon(beacon.isMultiFrameBeacon());
+            setBatteryLevel(beacon.getBatteryLevel());
+            setRealTxPower(beacon.getRealTxPower());
             return this;
         }
 
@@ -967,6 +975,24 @@ public class Beacon implements Parcelable, Serializable {
          */
         public Builder setMultiFrameBeacon(boolean multiFrameBeacon) {
             mBeacon.mMultiFrameBeacon = multiFrameBeacon;
+            return this;
+        }
+
+        /**
+         * @return builder
+         * @see Beacon#mBatteryLevel
+         */
+        public Builder setBatteryLevel(int batteryLevel) {
+            mBeacon.mBatteryLevel = batteryLevel;
+            return this;
+        }
+
+        /**
+         * @return builder
+         * @see Beacon#mRealTxPower
+         */
+        public Builder setRealTxPower(int realTxPower) {
+            mBeacon.mRealTxPower = realTxPower;
             return this;
         }
 
