@@ -9,16 +9,17 @@ import android.bluetooth.BluetoothManager;
 import android.bluetooth.le.AdvertiseCallback;
 import android.bluetooth.le.AdvertiseData;
 import android.bluetooth.le.AdvertiseSettings;
+import android.bluetooth.le.AdvertiseSettings.Builder;
 import android.bluetooth.le.BluetoothLeAdvertiser;
 import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanResult;
-import android.bluetooth.le.AdvertiseSettings.Builder;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.Build;
 import android.os.Handler;
 import android.os.PersistableBundle;
 import android.support.annotation.NonNull;
@@ -26,9 +27,10 @@ import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
-import java.util.List;
 
 import org.altbeacon.beacon.logging.LogManager;
+
+import java.util.List;
 
 /**
  *
@@ -258,29 +260,29 @@ public class BluetoothMedic {
                 }
             };
             if(scanner != null) {
-                scanner.startScan(callback);
-                while (this.mScanTestResult == null) {
-                    LogManager.d(TAG, "Waiting for scan test to complete...");
-
-                    try {
-                        Thread.sleep(1000L);
-                    } catch (InterruptedException e) { /* do nothing */ }
-
-                    if (System.currentTimeMillis() - testStartTime > 5000L) {
-                        LogManager.d(TAG, "Timeout running scan test");
-                        break;
-                    }
-                }
                 try {
+                    scanner.startScan(callback);
+                    while (this.mScanTestResult == null) {
+                        LogManager.d(TAG, "Waiting for scan test to complete...");
+
+                        try {
+                            Thread.sleep(1000L);
+                        } catch (InterruptedException e) { /* do nothing */ }
+
+                        if (System.currentTimeMillis() - testStartTime > 5000L) {
+                            LogManager.d(TAG, "Timeout running scan test");
+                            break;
+                        }
+                    }
                     scanner.stopScan(callback);
-                } catch (IllegalStateException e) { /* do nothing */ } // caught if bluetooth is off here
+                } catch (IllegalStateException e) {
+                    LogManager.d(TAG, "Bluetooth is off.  Cannot run scan test.");
+                }
             }
             else {
                 LogManager.d(TAG, "Cannot get scanner");
             }
         }
-
-
 
         LogManager.d(TAG, "scan test complete");
         return this.mScanTestResult == null || this.mScanTestResult;
@@ -302,8 +304,8 @@ public class BluetoothMedic {
         initializeWithContext(context);
         this.mTransmitterTestResult = null;
         long testStartTime = System.currentTimeMillis();
-        if (this.mAdapter != null) {
-            final BluetoothLeAdvertiser advertiser = this.mAdapter.getBluetoothLeAdvertiser();
+        if (mAdapter != null) {
+            final BluetoothLeAdvertiser advertiser = getAdvertiserSafely(mAdapter);
             if(advertiser != null) {
                 AdvertiseSettings settings = (new Builder()).setAdvertiseMode(0).build();
                 AdvertiseData data = (new android.bluetooth.le.AdvertiseData.Builder())
@@ -453,5 +455,17 @@ public class BluetoothMedic {
         if (jobScheduler != null) {
             jobScheduler.schedule(builder.build());
         }
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    private BluetoothLeAdvertiser getAdvertiserSafely(BluetoothAdapter adapter) {
+        try {
+            // This can sometimes throw a NullPointerException as reported here:
+            // https://github.com/AltBeacon/android-beacon-library/issues/672
+            return adapter.getBluetoothLeAdvertiser();
+        } catch (Exception e) {
+            LogManager.w(TAG, "Cannot get bluetoothLeAdvertiser", e);
+        }
+        return null;
     }
 }

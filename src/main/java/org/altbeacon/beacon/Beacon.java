@@ -275,8 +275,6 @@ public class Beacon implements Parcelable, Serializable {
         mRunningAverageRssi = (Double) in.readValue(null);
         mRssiMeasurementCount = in.readInt();
         mPacketCount = in.readInt();
-//        mScanRecord = new byte[in.readInt()];
-//        in.readByteArray(mScanRecord);
         mBatteryLevel = in.readInt();
         mRealTxPower = in.readInt();
     }
@@ -714,9 +712,6 @@ public class Beacon implements Parcelable, Serializable {
         out.writeValue(mRunningAverageRssi);
         out.writeInt(mRssiMeasurementCount);
         out.writeInt(mPacketCount);
-//        int length = mScanRecord.length;
-//        out.writeInt(length);
-//        out.writeByteArray(mScanRecord);
         out.writeInt(mBatteryLevel);
         out.writeInt(mRealTxPower);
     }

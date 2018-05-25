@@ -48,9 +48,7 @@ import org.altbeacon.beacon.service.RangeState;
 import org.altbeacon.beacon.service.RangedBeacon;
 import org.altbeacon.beacon.service.RegionMonitoringState;
 import org.altbeacon.beacon.service.RunningAverageRssiFilter;
-import org.altbeacon.beacon.service.ScanJob;
 import org.altbeacon.beacon.service.ScanJobScheduler;
-import org.altbeacon.beacon.service.ScanState;
 import org.altbeacon.beacon.service.SettingsData;
 import org.altbeacon.beacon.service.StartRMData;
 import org.altbeacon.beacon.service.scanner.NonBeaconLeScanCallback;
@@ -68,9 +66,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
-
-import org.altbeacon.beacon.service.ScanJob;
-import org.altbeacon.beacon.service.ScanState;
 
 /**
  * A class used to set up interaction with beacons from an <code>Activity</code> or <code>Service</code>.
@@ -259,6 +254,11 @@ public class BeaconManager {
      */
     public void setBackgroundBetweenScanPeriod(long p) {
         backgroundBetweenScanPeriod = p;
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
+                backgroundBetweenScanPeriod < 15 * 60 * 1000 /* 15 min */) {
+            LogManager.w(TAG, "Setting a short backgroundBetweenScanPeriod has no effect on " +
+                    "Android 8+, which is limited to scanning every ~15 minutes");
+        }
     }
 
     /**
@@ -548,6 +548,10 @@ public class BeaconManager {
      * otherwise beacon scans may be run only once every 15 minutes in the background, and no low
      * power scans may be performed between scanning cycles.
      *
+     * Setting this value to false will disable ScanJobs when the app is run on Android 8+, which
+     * can prohibit delivery of callbacks when the app is in the background unless the scanning
+     * process is running in a foreground service.
+     *
      * This method may only be called if bind() has not yet been called, otherwise an
      * `IllegalStateException` is thown.
      *
@@ -564,8 +568,13 @@ public class BeaconManager {
                     " availble prior to Android 5.0");
             return;
         }
+        if (enabled && android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            LogManager.w(TAG, "Disabling ScanJobs on Android 8+ may disable delivery of " +
+                    "beacon callbacks in the background unless a foreground service is active.");
+        }
         mScheduledScanJobsEnabled = enabled;
     }
+
     public boolean getScheduledScanJobsEnabled() {
         return mScheduledScanJobsEnabled;
     }
@@ -868,7 +877,9 @@ public class BeaconManager {
 
     protected void syncSettingsToService() {
         if (mScheduledScanJobsEnabled) {
-            ScanJobScheduler.getInstance().applySettingsToScheduledJob(mContext, this);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                ScanJobScheduler.getInstance().applySettingsToScheduledJob(mContext, this);
+            }
             return;
         }
         try {
@@ -961,7 +972,9 @@ public class BeaconManager {
     @TargetApi(18)
     private void applyChangesToServices(int type, Region region) throws RemoteException {
         if (mScheduledScanJobsEnabled) {
-            ScanJobScheduler.getInstance().applySettingsToScheduledJob(mContext, this);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                ScanJobScheduler.getInstance().applySettingsToScheduledJob(mContext, this);
+            }
             return;
         }
         if (serviceMessenger == null) {

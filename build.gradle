@@ -94,6 +94,12 @@ android {
     }
 }
 
+configurations {
+    doclava
+}
+
+
+
 dependencies {
     implementation fileTree ( dir: 'libs', include: ['*.jar'] )
     implementation 'com.android.support:appcompat-v7:26.0.0'
@@ -116,7 +122,9 @@ dependencies {
         exclude group: 'com.android.support', module: 'support-annotations'
         exclude group: 'org.hamcrest'
     })
+
     androidTestImplementation 'org.apache.commons:commons-math3:3.6.1'
+    doclava 'com.google.doclava:doclava:1.0.6'
 }
 
 apply plugin: 'idea'
@@ -160,6 +168,18 @@ android.libraryVariants.all { variant ->
         exclude '**/R.java'
     }
 
+}
+
+task generateJavadoc(type: Javadoc, dependsOn: project.configurations.doclava) {
+    failOnError = true
+    title = null
+    source = android.sourceSets.main.java.srcDirs
+    options.doclet = "com.google.doclava.Doclava"
+    options.docletpath = configurations.doclava.files.asType(List)
+    classpath +=
+            project.files(android.getBootClasspath().join(File.pathSeparator)) + configurations.compile
+
+    destinationDir = file("../javadocs/")
 }
 
 build.mustRunAfter clean
