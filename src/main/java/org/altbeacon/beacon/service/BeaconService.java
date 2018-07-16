@@ -61,7 +61,6 @@ import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 
 import static android.app.PendingIntent.FLAG_ONE_SHOT;
 import static android.app.PendingIntent.getBroadcast;
@@ -210,8 +209,7 @@ public class BeaconService extends Service {
         beaconManager.setScannerInSameProcess(true);
         if (beaconManager.isMainProcess()) {
             LogManager.i(TAG, "beaconService version %s is starting up on the main process", BuildConfig.VERSION_NAME);
-        }
-        else {
+        } else {
             LogManager.i(TAG, "beaconService version %s is starting up on a separate process", BuildConfig.VERSION_NAME);
             ProcessUtils processUtils = new ProcessUtils(this);
             LogManager.i(TAG, "beaconService PID is "+processUtils.getPid()+" with process name "+processUtils.getProcessName());
@@ -265,8 +263,7 @@ public class BeaconService extends Service {
             if (info != null && info.metaData != null) {
                 return info.metaData.get(key).toString();
             }
-        }
-        catch (PackageManager.NameNotFoundException e) {
+        } catch (PackageManager.NameNotFoundException e) {
         }
         return null;
     }

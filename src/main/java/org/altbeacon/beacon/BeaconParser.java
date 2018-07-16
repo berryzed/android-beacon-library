@@ -517,7 +517,7 @@ public class BeaconParser implements Serializable {
                         // If this is a variable length identifier, we truncate it to the size that
                         // is available in the packet
                         int start = mIdentifierStartOffsets.get(i) + startByte;
-                        int end = pduToParse.getEndIndex()+1;
+                        int end = pduToParse.getEndIndex() + 1;
                         if (end <= start) {
                             LogManager.d(TAG, "PDU is too short for identifer.  Packet is malformed");
                             return null;

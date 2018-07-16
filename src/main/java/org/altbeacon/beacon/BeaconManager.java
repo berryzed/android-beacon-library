@@ -576,7 +576,7 @@ public class BeaconManager {
             return;
         }
         if (!enabled && android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            LogManager.w(TAG, "Disabling ScanJobs on Android 8+ may disable delivery of "+
+            LogManager.w(TAG, "Disabling ScanJobs on Android 8+ may disable delivery of " +
                     "beacon callbacks in the background unless a foreground service is active.");
         }
         mScheduledScanJobsEnabled = enabled;
@@ -1348,21 +1348,19 @@ public class BeaconManager {
      * that this method does not by itself enable constant scanning.  The scan intervals will work
      * as normal and must be configurd to specific values depending on how often you wish to scan.
      *
+     * @param notification - the notification that will be displayed when beacon scanning is active,
+     *                     along with the icon that shows up in the status bar.
+     * @throws IllegalStateException if called after consumers are already bound to the scanning
+     *                               service
      * @see #setForegroundScanPeriod(long)
      * @see #setForegroundBetweenScanPeriod(long)
-     *
+     * <p>
      * This method requires a notification to display a message to the user about why the app is
      * scanning in the background.  The notification must include an icon that will be displayed
      * in the top bar whenever the scanning service is running.
-     *
+     * <p>
      * If the BeaconService is configured to run in a different process, this call will have no
      * effect.
-     *
-     * @param notification - the notification that will be displayed when beacon scanning is active,
-     *                       along with the icon that shows up in the status bar.
-     *
-     * @throws IllegalStateException if called after consumers are already bound to the scanning
-     * service
      */
     public void enableForegroundServiceScanning(Notification notification, int notificationId)
             throws IllegalStateException {
@@ -1380,13 +1378,12 @@ public class BeaconManager {
     /**
      * Disables a foreground scanning service, if previously configured.
      *
+     * @throws IllegalStateException if called after consumers are already bound to the scanning
+     *                               service
      * @see #enableForegroundServiceScanning
-     *
+     * <p>
      * In order to call this method to disable a foreground service, you must  unbind from the
      * BeaconManager.  You can then rebind after this call is made.
-     *
-     * @throws IllegalStateException if called after consumers are already bound to the scanning
-     * service
      */
     public void disableForegroundServiceScanning() throws IllegalStateException {
         if (isAnyConsumerBound()) {
@@ -1397,8 +1394,8 @@ public class BeaconManager {
     }
 
     /**
-     * @see #enableForegroundServiceScanning
      * @return The notification shown for the beacon scanning service, if so configured
+     * @see #enableForegroundServiceScanning
      */
     public Notification getForegroundServiceNotification() {
         return mForegroundServiceNotification;
@@ -1406,8 +1403,8 @@ public class BeaconManager {
 
 
     /**
-     * @see #enableForegroundServiceScanning
      * @return The notification shown for the beacon scanning service, if so configured
+     * @see #enableForegroundServiceScanning
      */
     public int getForegroundServiceNotificationId() {
         return mForegroundServiceNotificationId;
