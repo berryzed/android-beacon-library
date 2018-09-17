@@ -3,7 +3,7 @@
  * http://www.radiusnetworks.com
  *
  * @author David G. Young
- *
+ * <p>
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -11,9 +11,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -35,7 +35,7 @@ import java.util.Map;
 public class RangeState implements Serializable {
     private static final String TAG = "RangeState";
     private Callback mCallback;
-    private Map<Beacon,RangedBeacon> mRangedBeacons = new HashMap<Beacon,RangedBeacon>();
+    private Map<Beacon, RangedBeacon> mRangedBeacons = new HashMap<Beacon, RangedBeacon>();
     private static boolean sUseTrackingCache = false;
 
     public RangeState(Callback c) {
@@ -47,14 +47,13 @@ public class RangeState implements Serializable {
     }
 
     public void addBeacon(Beacon beacon) {
-        if (mRangedBeacons.containsKey(beacon)) {
-            RangedBeacon rangedBeacon = mRangedBeacons.get(beacon);
+        RangedBeacon rangedBeacon = mRangedBeacons.get(beacon);
+        if (rangedBeacon != null) {
             if (LogManager.isVerboseLoggingEnabled()) {
                 LogManager.d(TAG, "adding %s to existing range for: %s", beacon, rangedBeacon);
             }
             rangedBeacon.updateBeacon(beacon);
-        }
-        else {
+        } else {
             if (LogManager.isVerboseLoggingEnabled()) {
                 LogManager.d(TAG, "adding %s to new rangedBeacon", beacon);
             }
@@ -65,30 +64,31 @@ public class RangeState implements Serializable {
     // returns a list of beacons that are tracked, and then removes any from the list that should not
     // be there for the next cycle
     public synchronized Collection<Beacon> finalizeBeacons() {
-        Map<Beacon,RangedBeacon> newRangedBeacons = new HashMap<Beacon,RangedBeacon>();
+        Map<Beacon, RangedBeacon> newRangedBeacons = new HashMap<Beacon, RangedBeacon>();
         ArrayList<Beacon> finalizedBeacons = new ArrayList<Beacon>();
 
         synchronized (mRangedBeacons) {
             for (Beacon beacon : mRangedBeacons.keySet()) {
                 RangedBeacon rangedBeacon = mRangedBeacons.get(beacon);
-                if (rangedBeacon.isTracked()) {
-                    rangedBeacon.commitMeasurements(); // calculates accuracy
-                    if (!rangedBeacon.noMeasurementsAvailable()) {
-                        rangedBeacon.getBeacon().updateExtraData();
-                        finalizedBeacons.add(rangedBeacon.getBeacon());
+                if (rangedBeacon != null) {
+                    if (rangedBeacon.isTracked()) {
+                        rangedBeacon.commitMeasurements(); // calculates accuracy
+                        if (!rangedBeacon.noMeasurementsAvailable()) {
+                            rangedBeacon.getBeacon().updateExtraData();
+                            finalizedBeacons.add(rangedBeacon.getBeacon());
+                        }
                     }
-                }
-                // If we still have useful measurements, keep it around but mark it as not
-                // tracked anymore so we don't pass it on as visible unless it is seen again
-                if (!rangedBeacon.noMeasurementsAvailable() == true) {
-                    //if TrackingCache is enabled, allow beacon to not receive
-                    //measurements for a certain amount of time
-                    if (!sUseTrackingCache || rangedBeacon.isExpired())
-                        rangedBeacon.setTracked(false);
-                    newRangedBeacons.put(beacon, rangedBeacon);
-                }
-                else {
-                    LogManager.d(TAG, "Dumping beacon from RangeState because it has no recent measurements.");
+                    // If we still have useful measurements, keep it around but mark it as not
+                    // tracked anymore so we don't pass it on as visible unless it is seen again
+                    if (!rangedBeacon.noMeasurementsAvailable() == true) {
+                        //if TrackingCache is enabled, allow beacon to not receive
+                        //measurements for a certain amount of time
+                        if (!sUseTrackingCache || rangedBeacon.isExpired())
+                            rangedBeacon.setTracked(false);
+                        newRangedBeacons.put(beacon, rangedBeacon);
+                    } else {
+                        LogManager.d(TAG, "Dumping beacon from RangeState because it has no recent measurements.");
+                    }
                 }
             }
             mRangedBeacons = newRangedBeacons;

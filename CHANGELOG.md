@@ -1,7 +1,11 @@
 ### Development
 
-Bug Fixes:
- - Stop running scheduled jobs to do sscans after last consumer unbound. (#702, David G. Young)
+### 2.15.1 / 2018-09-01
+
+ - Prevent crash caused by internal Android exception when stopping scanning (#724, David G. Young)
+ - Fix Android 8 crashing apps on background monitoring/ranging data delivery (#720, David G. Young)
+ - Fix intermittent NPE on ranging beacons (#716, Federico Bertoli, David G. Young)
+ - Stop running scheduled jobs to do scans after last consumer unbound. (#702, David G. Young)
 
 ### 2.15 / 2018-07-04
 
